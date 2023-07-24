@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>TechBldrs Ticket Portal</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+      }
+      h1 {
+        text-align: center;
+        color: rgb(126, 31, 64);
+      }
+      form {
+        text-align: center;
+        margin-top: 20px;
+      }
+      input[type="text"] {
+        padding: 5px;
+        width: 200px;
+      }
+      input[type="submit"] {
+        padding: 5px 10px;
+        background-color: rgb(126, 31, 64);;
+        border: none;
+        color: #fff;
+        cursor: pointer;
+      }
+    </style>
+    <script>
+      function redirectToClientTasks() {
+        var clientID = document.getElementById('clientID').value;
+        window.location.href = '/fetch-tasks/' + clientID;
+      }
+
+      function redirectToAssigneeTasks() {
+        var assigneeID = document.getElementById('assigneeID').value;
+        window.location.href = '/fetch-tasks-by-assignee/' + assigneeID;
+      }
+    </script>
+  </head>
+
+  <body>
+    <h1>TechBldrs Ticket Portal</h1>
+    <form onsubmit="redirectToClientTasks(); return false;">
+      <input type="text" id="clientID" placeholder="Enter Client ID">
+      <input type="submit" value="Fetch Tasks by Client ID">
+    </form>
+    <form onsubmit="redirectToAssigneeTasks(); return false;">
+      <input type="text" id="assigneeID" placeholder="Enter Assignee ID">
+      <input type="submit" value="Fetch Tasks by Assignee ID">
+    </form>
+  </body>
+</html>

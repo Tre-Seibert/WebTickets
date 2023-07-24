@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{clientID}}'s Tickets | TechBldrs Inc.</title>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: rgb(126, 31, 64);
+            font-family: Helvetica, Arial, sans-serif;
+        }
+        h3 {
+            color: rgb(126, 31, 64);
+            font-family: Helvetica, Arial, sans-serif;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            font-family: Helvetica, Arial, sans-serif;
+            color: rgb(126, 31, 64);
+        }
+    </style>
+</head>
+<body>
+    <h1 onclick="window.location.href='http://localhost:5000/'">Tickets</h1>
+    <!-- <h1 onclick="window.location.href='https://tickets.techbldrs.com/'">Tickets</h1> -->
+    <h3>Client: {{ clientID }}</h3>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Subject</th>
+                <th>Category</th>
+                <th>Date Created</th>
+                <th>Last Activity</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for task in tasks %}
+            <tr>
+                <td>{{ task.Subject }}</td>
+                <td>{{ task.Category }}</td>
+                <td>{{ task['Date Created'] }}</td>
+                <td>{{ task['Last Activity'] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <script>
+        function openForm(formId) {
+            document.getElementById(formId).style.display = "block";
+        }
+
+        function closeForm(formId) {
+            document.getElementById(formId).style.display = "none";
+        }
+    </script>
+</body>
+</html>
