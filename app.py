@@ -221,7 +221,8 @@ def favicon():
     return send_from_directory(os.path.join(app.root_path, 'static'), 'favicon.ico',mimetype='image/vnd.microsoft.icon')
 
 ###############################
-# Fetch Tasks /assigneeID Route
+# Index Route
+# Redirected here after root
 ###############################
 @app.route('/index/<string:assigneeID>')
 def home(assigneeID):
@@ -376,9 +377,9 @@ def home(assigneeID):
         # Return error page.
         return render_template("error.html")
 
-#########################
-# Create Meeting Route
-#########################
+###########################
+# Create Time Entry Route
+###########################
 @app.route('/create-meeting', methods=['POST'])
 def create_meeting_request():
     if request.method == 'POST':
@@ -440,6 +441,7 @@ def create_meeting_request():
 
 ###############################
 # Fetch Tasks /clientID Route
+# Logic should match fetch-tasks-by-assignee/assigneeID route
 ###############################
 @app.route('/fetch-tasks/<string:clientID>')
 def fetch_tasks(clientID):
@@ -541,9 +543,9 @@ def fetch_tasks(clientID):
         return render_template("error.html")
 
 
-
 ###############################
 # Fetch Tasks /assigneeID Route
+# Logic should match fetch-tasks/clientID route
 ###############################
 @app.route('/fetch-tasks-by-assignee/<string:assigneeID>')
 def fetch_tasks_assignee(assigneeID):
@@ -668,9 +670,7 @@ def fetch_tasks_assignee(assigneeID):
 
 
 #########################################
-# Client Portal Code Below:
-# - note: The new features in v1.6 are
-# not implemented to client portal
+# Client Portal:
 #########################################
 
 
