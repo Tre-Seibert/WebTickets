@@ -1,8 +1,28 @@
 # WebTickets v1.7
 
+Runs stable on python 3.11.4
 .env file is needed for global variables to work correctly.
 
+Speical Cases:
+
+Client Portal
+-- filter out tickets in '8 Time' and "9 Review" for client portal
+-- filter out tickets with a '#' after CLIENTID and TICKETNUMBER
+-- filter out tickets with "-2DEL-" in subject line
+
+Employee Portal
+-- filter out tickets in "9 Review for employee portal"
+-- includes placeholder tickets.
+
+______________________________________________________________________
+
 Changelog:
+
+v1.7.1:
+-- Creates timeentrysent webpage to redirect users after submitting.
+-- Cleaned code.
+
+v1.7:
 
 -- Put Redis Port and Host in .env.
 -- filter out tickets in '8 Time' for client portal.
@@ -16,11 +36,3 @@ Changelog:
 -- Autofills datetime to current time in time entry form.
 -- Includes new "index" route for users homepage.
 
-Speical Cases:
-Client Portal:
--- filter out tickets in '8 Time' and "9 Review" for client portal
--- filter out tickets with a '#' after CLIENTID and TICKETNUMBER
--- filter out tickets with "-2DEL-" in subject line
-Employee Portal:
--- filter out tickets in "9 Review for employee portal"
--- includes placeholder tickets.
