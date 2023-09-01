@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{assigneeID}}'s Tickets | TechBldrs Inc.</title>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <style>
+        .collapsible {
+            cursor: pointer;
+            user-select: none;
+        }
+        .content {
+            display: none;
+            overflow: hidden;
+            background-color: #f2f2f2;
+            padding: 8px;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: rgb(126, 31, 64);
+            font-family: Helvetica, Arial, sans-serif;
+        }
+        h3 {
+            color: rgb(126, 31, 64);
+            font-family: Helvetica, Arial, sans-serif;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            font-family: Helvetica, Arial, sans-serif;
+            color: rgb(126, 31, 64);
+        }
+        form {
+            margin-top: 20px;
+            margin-bottom: 15px;
+            margin-right: 20px;
+        }
+        input[type="text"] {
+            padding: 5px;
+            width: 200px;
+        }
+        input[type="submit"] {
+            padding: 5px 10px;
+            background-color: rgb(126, 31, 64);;
+            border: none;
+            color: #fff;
+            cursor: pointer;
+      }
+
+        .form-popup {
+            display: none;
+            position: absolute;
+            z-index: 1;
+            background-color: #f9f9f9;
+            border: 1px solid #ccc;
+            padding: 15px;
+            right: 0; /* Align to the right */
+            max-width: 350px; /* Limit the width */
+            overflow: hidden; /* Prevent overflow */
+            margin-right: 75px;
+        }
+
+        .form-container {
+            max-width: 100%; /* Adjust as needed */
+        }
+
+        .form-container input[type=text],
+        .form-container input[type=datetime-local],
+        .form-container textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0 15px 0;
+            border: none;
+            background: #f1f1f1;
+        }
+
+        .form-container input[type=submit] {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .form-container input[type=submit]:hover {
+            opacity: 0.8;
+        }
+
+        .form-container button {
+            background-color: #f44336;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .form-container button:hover {
+            opacity: 0.8;
+        }
+        .reopened {
+            color: rgb(218, 0, 0);
+        }
+        .table-container {
+            overflow-x: auto;
+            margin-bottom: 20px;
+        }
+
+        .action {
+            text-align: left; /* Align text to the right in header cells */
+            position: absolute;
+            right: 10%; /* Adjust the percentage as needed */
+        }
+        
+        /* Style for data cells */
+        .button {
+            text-align: left; /* Align text to the right in data cells */
+            position: absolute;
+            right: 8.6%; /* Adjust the percentage as needed */
+        }
+        .grey {
+            background: #f2f2f2;
+        }
+        
+
+        /* Styles for mobile screens */
+        @media only screen and (max-width: 600px) {
+            .table-container {
+                overflow-x: auto;
+                margin-bottom: 20px;
+            }
+
+            .form-popup {
+                display: none;
+                position: fixed;
+                z-index: 1;
+                background-color: #f9f9f9;
+                border: 1px solid #ccc;
+                padding: 15px;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+            }
+
+            .form-container {
+                max-width: 100%;
+                height: 100%;
+                overflow: auto;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+            }
+
+            .form-container input[type=text],
+            .form-container input[type=datetime-local],
+            .form-container textarea {
+                width: 100%;
+                padding: 10px;
+                margin: 5px 0 15px 0;
+                border: none;
+                background: #f1f1f1;
+            }
+
+            .form-container input[type=submit] {
+                background-color: #4CAF50;
+                color: white;
+                padding: 12px 20px;
+                border: none;
+                cursor: pointer;
+                width: 100%;
+                margin-bottom: 10px;
+            }
+
+            .form-container input[type=submit]:hover {
+                opacity: 0.8;
+            }
+
+            .form-container button {
+                background-color: #f44336;
+                color: white;
+                padding: 12px 20px;
+                border: none;
+                cursor: pointer;
+                width: 100%;
+            }
+
+            .form-container button:hover {
+                opacity: 0.8;
+            }
+
+        }
+    </style>
+</head>
+<body>
+    <!-- <h1 onclick="window.location.href='http://localhost:5000/'">Tickets</h1> -->
+    <h1 onclick="window.location.href='https://tickets.techbldrs.com/'">Tickets</h1>
+    <h3>Assignee: {{ assigneeID }}</h3>
+    <form onsubmit="redirectToClientTasks(); return false;">
+        <input type="text" id="clientID" placeholder="Enter Client ID">
+        <input type="submit" value="Fetch Tasks by Client ID">
+    </form>
+    <form onsubmit="redirectToAssigneeTasks(); return false;">
+        <input type="text" id="assigneeID" placeholder="Enter Assignee ID">
+        <input type="submit" value="Fetch Tasks by Assignee ID">
+    </form>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Subject</th>
+                    <th>Category</th>
+                    <th>Date Created</th>
+                    <th>Last Activity</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for task in tasks %}
+                <tr>
+                    <td{% if "1 Re-Opened" in task.Category %} class="reopened"{% endif %}>{{ task.Subject }}</td>
+                    <td{% if "1 Re-Opened" in task.Category %} class="reopened"{% endif %}>{{ task.Category }}</td>
+                    <td{% if "1 Re-Opened" in task.Category %} class="reopened"{% endif %}>{{ task['Date Created'] }}</td>
+                    <td{% if "1 Re-Opened" in task.Category %} class="reopened"{% endif %}>{{ task['Last Activity'] }}</td>
+                    <td>
+                        <button onclick="openForm('{{ task.Subject }}')">Time Entry</button>
+                        <div class="form-popup" id="{{ task.Subject }}">
+                            <form action="/create-meeting" method="post" class="form-container">
+                                <h3>Time Entry Form</h3>
+                                <label for="subject">Subject:</label>
+                                <input type="text" id="subject" name="subject" value="{{ task.Subject.split('|')[:3] | join('|') + '| ' }}" required><br>
+
+                                <label for="start_time">Start Time: <em style="font-size: 12px;">Your Last Time Entry: {{latest_end_time}}</em></label>
+                                <input type="datetime-local" id="start_time" name="start_time" value="{{currentime}}" required><br>
+
+                                <label for="end_time">End Time:</label>
+                                <input type="datetime-local" id="end_time" name="end_time" value="{{currentime}}" required><br>
+
+                                <label for="body">Body:</label>
+                                <textarea name="body" id="body" rows="5" cols="50" required></textarea><br>
+
+                                <input type="submit" value="Submit Time Entry">
+                                <button type="button" onclick="closeForm('{{ task.Subject }}')">Cancel</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <h1>Time Entries</h1>
+    <table>
+        <thead>
+            <tr class="grey">
+                <th>Subject</th>
+                <th class="action" >Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for event in events %}
+            <tr class="collapsible" onclick="toggleContent('{{ loop.index }}')">
+                <td style="border: none;">{{ event.subject }}</td>
+                <td class="button" style="border: none;"><button onclick="openForm('{{ event.subject }}')">Time Entry</button></td>
+            </tr>
+            <tr>
+                <td>
+                    <div id="{{ loop.index }}" class="content">
+                        <b>Start:</b> <em>{{ event.start }}</em>
+                        <b><br>End:</b> <em>{{ event.end }}</em>
+                        <b><br>Body:</b> {{ event.body }}<br>
+                    </div>
+                </td>
+                <td>
+                    <div class="form-popup" id="{{ event.subject }}">
+                        <form action="/create-meeting" method="post" class="form-container">
+                            <h3>Time Entry Form</h3>
+                            <label for="subject">Subject:</label>
+                            <input type="text" id="subject" name="subject" value="{{ event.subject.split('|')[:3] | join('|') + '| ' }}" required><br>
+
+                            <label for="start_time">Start Time: <em style="font-size: 12px;">Your Last Time Entry: {{latest_end_time}}</em></label>
+                            <input type="datetime-local" id="start_time" name="start_time" value="{{currentime}}" required><br>
+
+                            <label for="end_time">End Time:</label>
+                            <input type="datetime-local" id="end_time" name="end_time" value="{{currentime}}" required><br>
+
+                            <label for="body">Body:</label>
+                            <textarea name="body" id="body" rows="5" cols="50" required></textarea><br>
+
+                            <input type="submit" value="Submit Time Entry">
+                            <button type="button" onclick="closeForm('{{ event.subject }}')">Cancel</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+
+    <script>
+        function openForm(formId) {
+            document.getElementById(formId).style.display = "block";
+        }
+
+        function closeForm(formId) {
+            document.getElementById(formId).style.display = "none";
+        }
+        function redirectToClientTasks() {
+            var clientID = document.getElementById('clientID').value;
+            window.location.href = '/fetch-tasks/' + clientID;
+        }
+        function redirectToAssigneeTasks() {
+            var assigneeID = document.getElementById('assigneeID').value;
+            window.location.href = '/fetch-tasks-by-assignee/' + assigneeID;
+        }
+        // JavaScript to toggle the collapsible content
+        function toggleContent(eventId) {
+            var content = document.getElementById(eventId);
+            if (content.style.display === "none") {
+                content.style.display = "block";
+            } else {
+                content.style.display = "none";
+            }
+        }
+    </script>
+</body>
+</html>
