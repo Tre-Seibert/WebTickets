@@ -414,7 +414,7 @@ def create_meeting_request():
             item.save(send_meeting_invitations=SEND_TO_ALL_AND_SAVE_COPY)
 
             # Return success message
-            render_template("timeentrysent.html")
+            return render_template("timeentrysent.html")
         else:
             # Return error page.
             render_template("error.html")
