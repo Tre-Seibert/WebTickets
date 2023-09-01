@@ -1,8 +1,8 @@
-# WebTickets
+# WebTickets v1.7
 
 .env file is needed for global variables to work correctly.
 
-v1.7:
+Changelog:
 
 -- Put Redis Port and Host in .env.
 -- filter out tickets in '8 Time' for client portal.
