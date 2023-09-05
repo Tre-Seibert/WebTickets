@@ -1,6 +1,7 @@
 # v1.7.1
 # -- Creates timeentrysent webpage to redirect users after submitting.
 # -- Cleaned code.
+# -- Reduced time entry number to 3 tickets.
 
 ###############
 # IMPORTS
@@ -307,8 +308,8 @@ def home(assigneeID):
         assigneeID = assigneeID.upper()
         
 
-        # Get all calendar items and slice to get the last 10
-        calendar_items = account.calendar.all()[::-1][-10:]
+        # Get all calendar items and slice to get the last 3
+        calendar_items = account.calendar.all()[::-1][-3:]
 
         # Find the latest end time
         latest_end_time = None
