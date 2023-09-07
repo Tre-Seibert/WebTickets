@@ -1,7 +1,8 @@
-# v1.7.1
+# v1.7.2
 # -- Creates timeentrysent webpage to redirect users after submitting.
 # -- Cleaned code.
 # -- Reduced time entry number to 3 tickets.
+# -- Adds fault tolerance in index route.
 
 ###############
 # IMPORTS
