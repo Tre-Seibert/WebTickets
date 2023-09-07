@@ -28,7 +28,7 @@ from datetime import datetime, timedelta # For converting times
 # GLOBALS
 ###############
 
-TESTING_MODE = True
+TESTING_MODE = False
 
 # Load env variables
 load_dotenv()
