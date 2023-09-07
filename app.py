@@ -17,7 +17,7 @@ from msal import ConfidentialClientApplication # For interactive authentication
 from flask import Flask, render_template, request, session, redirect, send_from_directory, url_for # For creating web app
 from redis import Redis # For access token caching
 from flask_session import Session # For session handling
-from exchangelib import DELEGATE, Account, Configuration, ExtendedProperty, Task, CalendarItem, OAuth2AuthorizationCodeCredentials, OAUTH2, OAuth2LegacyCredentials # For exporting tickets
+from exchangelib import DELEGATE, Account, Configuration, ExtendedProperty, FaultTolerance, Task, CalendarItem, OAuth2AuthorizationCodeCredentials, OAUTH2, OAuth2LegacyCredentials # For exporting tickets
 from exchangelib.items import SEND_TO_ALL_AND_SAVE_COPY # For sending time entrys 
 from exchangelib.queryset import Q
 from pytz import timezone # For converting timezones
@@ -28,7 +28,7 @@ from datetime import datetime, timedelta # For converting times
 # GLOBALS
 ###############
 
-TESTING_MODE = False
+TESTING_MODE = True
 
 # Load env variables
 load_dotenv()
@@ -222,7 +222,7 @@ def home(assigneeID):
             print("Creds var: " + str(creds))
 
         # Define Exchangelib config.
-        conf = Configuration(server="outlook.office365.com", auth_type=OAUTH2, credentials=creds)
+        conf = Configuration(server="outlook.office365.com", auth_type=OAUTH2, credentials=creds, retry_policy=FaultTolerance(max_wait=3600))
 
         # Define the Exchangelib account, passing creds w/ access token
         account = Account(
@@ -278,7 +278,7 @@ def home(assigneeID):
         # Traverse through the cSortedTickets (reversed so that last activity is at the top)
         for task in reversed(list(cSortedTickets)):
             if TESTING_MODE == True:
-                print(type(task.subject))
+                print("Ticket Subject: ", task.subject)
             # Filter out the tickets in 'Review' category
             if task.categories != ["9 REVIEW"]:
                     # Parse the properties to the dictionary
@@ -314,6 +314,9 @@ def home(assigneeID):
 
         # Get all calendar items and slice to get the last 3
         calendar_items = account.calendar.all()[::-1][-3:]
+
+        if TESTING_MODE == True:
+            print("calendar items: ", calendar_items)
 
         # Find the latest end time
         latest_end_time = None
