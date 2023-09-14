@@ -152,12 +152,8 @@ def index():
         email = str(session["email"])
         name = str(session["name"])
         assignee = email[:2]
-        
-        target_url = f"/index/{assignee}"
 
-        print(target_url)
-
-        return redirect(target_url)
+        return home(assignee)
     else:
         # If access token is not in redis cache:
         # 1. Generate auth url
@@ -320,9 +316,10 @@ def home(assigneeID):
         for item in account.calendar.all().only("subject", "start", "end", "location", "body"):
             calendar_items.append(item)
             print(calendar_items)
-            if len(calendar_items) == 3:
+            if len(calendar_items) == 5:
                 break
 
+        calendar_items.reverse()
 
         if TESTING_MODE == True:
             print("calendar items: ", calendar_items)
