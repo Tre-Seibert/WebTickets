@@ -1,7 +1,7 @@
 # v1.7.2
 # -- Creates timeentrysent webpage to redirect users after submitting.
 # -- Cleaned code.
-# -- Reduced time entry number to 3 tickets.
+# -- Reduced time entry number to 5 tickets.
 # -- Adds fault tolerance in index route.
 
 ###############
@@ -242,10 +242,10 @@ def home(assigneeID):
 
 
         # Sort the tasks by passed assigneeID 
-        cSortedTickets = cTasks.filter(assignee_property__exact=assigneeID).order_by('client_property', '-dateCreated_property')
+        cSortedTickets = cTasks.filter(assignee_property__exact=assigneeID).order_by('client_property', '-dateCreated_property').only("subject", "categories", "dateCreated_property", "hrsActualTotal_property", "datelastactivity_property")
 
         # Sort the tasks by assigneeID as none
-        cSortedTicketsNone = cTasks.filter(assignee_property__exact="").order_by('client_property', '-dateCreated_property')
+        cSortedTicketsNone = cTasks.filter(assignee_property__exact="").order_by('client_property', '-dateCreated_property').only("subject", "categories", "dateCreated_property", "hrsActualTotal_property", "datelastactivity_property")
 
 
         # Define list to store tickets with assignee=""
@@ -309,16 +309,15 @@ def home(assigneeID):
         assigneeID = assigneeID.upper()
         
 
-        #Get all calendar items and slice to get the last 3 - 38 sec - error -
-        # calendar_items = account.calendar.all()[::-1][-3:]
-
+        # Get all calendar items and slice to get the last 5
         calendar_items = []
         for item in account.calendar.all().only("subject", "start", "end", "location", "body"):
             calendar_items.append(item)
             print(calendar_items)
             if len(calendar_items) == 5:
                 break
-
+        
+        # Reverse list to keep latest on top
         calendar_items.reverse()
 
         if TESTING_MODE == True:
