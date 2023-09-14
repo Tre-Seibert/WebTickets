@@ -313,8 +313,16 @@ def home(assigneeID):
         assigneeID = assigneeID.upper()
         
 
-        # Get all calendar items and slice to get the last 3
-        calendar_items = account.calendar.all()[::-1][-3:]
+        #Get all calendar items and slice to get the last 3 - 38 sec - error -
+        # calendar_items = account.calendar.all()[::-1][-3:]
+
+        calendar_items = []
+        for item in account.calendar.all().only("subject", "start", "end", "location", "body"):
+            calendar_items.append(item)
+            print(calendar_items)
+            if len(calendar_items) == 3:
+                break
+
 
         if TESTING_MODE == True:
             print("calendar items: ", calendar_items)
@@ -344,7 +352,9 @@ def home(assigneeID):
                     'location': item.location,
                     'body': item.body
                 }
+                print(event_data)
                 calendar_events.append(event_data)
+                
 
         
         # Get current datetime to pass to html
