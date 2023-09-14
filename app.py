@@ -474,10 +474,10 @@ def fetch_tasks(clientID):
         cTasks = fParent / fSubfolder # This should be a folder
 
         # Sort the tasks by passed clinetID 
-        cSortedTickets = cTasks.filter(client_property__exact=clientID).order_by('client_property', '-dateCreated_property')
+        cSortedTickets = cTasks.filter(client_property__exact=clientID).order_by('client_property', '-dateCreated_property').only("subject", "categories", "dateCreated_property", "hrsActualTotal_property", "datelastactivity_property")
         
         # Sort the tasks by clinetID none for place holder tickets
-        cSortedTicketsNone = cTasks.filter(assignee_property__exact="").order_by('client_property', '-dateCreated_property')
+        cSortedTicketsNone = cTasks.filter(assignee_property__exact="").order_by('client_property', '-dateCreated_property').only("subject", "categories", "dateCreated_property", "hrsActualTotal_property", "datelastactivity_property")
 
         # Define list to store tickets with assignee=""
         listTicketsNone = []
@@ -578,10 +578,10 @@ def fetch_tasks_assignee(assigneeID):
 
 
         # Sort the tasks by passed assigneeID 
-        cSortedTickets = cTasks.filter(assignee_property__exact=assigneeID).order_by('client_property', '-dateCreated_property')
+        cSortedTickets = cTasks.filter(assignee_property__exact=assigneeID).order_by('client_property', '-dateCreated_property').only("subject", "categories", "dateCreated_property", "hrsActualTotal_property", "datelastactivity_property")
 
         # Sort the tasks by assigneeID as none
-        cSortedTicketsNone = cTasks.filter(assignee_property__exact="").order_by('client_property', '-dateCreated_property')
+        cSortedTicketsNone = cTasks.filter(assignee_property__exact="").order_by('client_property', '-dateCreated_property').only("subject", "categories", "dateCreated_property", "hrsActualTotal_property", "datelastactivity_property")
 
 
         # Define list to store tickets with assignee=""
