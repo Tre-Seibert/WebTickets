@@ -20,9 +20,9 @@ from redis import Redis # For access token caching
 from flask_session import Session # For session handling
 from exchangelib import DELEGATE, Account, Configuration, ExtendedProperty, FaultTolerance, Task, CalendarItem, OAuth2AuthorizationCodeCredentials, OAUTH2, OAuth2LegacyCredentials # For exporting tickets
 from exchangelib.items import SEND_TO_ALL_AND_SAVE_COPY # For sending time entrys 
-from exchangelib.queryset import Q
 from pytz import timezone # For converting timezones
 from datetime import datetime, timedelta # For converting times
+import html2text
 
 
 ###############
@@ -203,6 +203,12 @@ def callback():
 def favicon():
     return send_from_directory(os.path.join(app.root_path, 'static'), 'favicon.ico',mimetype='image/vnd.microsoft.icon')
 
+
+# Define a function to remove HTML tags
+def remove_html_tags(html_text):
+    return html2text.html2text(html_text)
+
+
 ###############################
 # Index Route
 # Redirected here after root
@@ -242,10 +248,12 @@ def home(assigneeID):
 
 
         # Sort the tasks by passed assigneeID 
-        cSortedTickets = cTasks.filter(assignee_property__exact=assigneeID).order_by('client_property', '-dateCreated_property').only("subject", "categories", "dateCreated_property", "hrsActualTotal_property", "datelastactivity_property")
+        cSortedTickets = cTasks.filter(assignee_property__exact=assigneeID).order_by('client_property', '-dateCreated_property')\
+            .only("subject", "categories", "dateCreated_property", "hrsActualTotal_property", "datelastactivity_property")
 
         # Sort the tasks by assigneeID as none
-        cSortedTicketsNone = cTasks.filter(assignee_property__exact="").order_by('client_property', '-dateCreated_property').only("subject", "categories", "dateCreated_property", "hrsActualTotal_property", "datelastactivity_property")
+        cSortedTicketsNone = cTasks.filter(assignee_property__exact="").order_by('client_property', '-dateCreated_property')\
+            .only("subject", "categories", "dateCreated_property", "hrsActualTotal_property", "datelastactivity_property")
 
 
         # Define list to store tickets with assignee=""
@@ -308,12 +316,29 @@ def home(assigneeID):
         merged_dict = listTickets + listTicketsNone
         assigneeID = assigneeID.upper()
         
-
-        # Get all calendar items and slice to get the last 5
+        # Create list to store time entries
         calendar_items = []
+        # Loop through 5 entries, only retrieves select fields
         for item in account.calendar.all().only("subject", "start", "end", "location", "body"):
+            # Check if the item's body contains "<html>" - due to Teams extension on outlook
+            if "<html>" in item.body:
+                # Remove HTML tags and update the item's body
+                plain_text_body = remove_html_tags(item.body)
+                # Save the item.body to the new updated body
+                item.body = plain_text_body
+
+                # Delete everything after underscore
+                if item.body.count('_') >= 10:
+                    # Find the index of the first underscore
+                    first_underscore_index = item.body.find('_')
+                    # Remove text from the start to including the first underscore
+                    plain_text_body = item.body[:first_underscore_index]
+                    # Save the item.body to the new updated body
+                    item.body = plain_text_body
+
+            # Add items to list
             calendar_items.append(item)
-            print(calendar_items)
+            # Stop retrieving items after 5
             if len(calendar_items) == 5:
                 break
         
@@ -337,7 +362,6 @@ def home(assigneeID):
 
         # Create an empty list to store the calendar events
         calendar_events = []
-
         # Collect the retrieved calendar events
         for item in reversed(list(calendar_items)):
             if isinstance(item, CalendarItem):
@@ -368,7 +392,8 @@ def home(assigneeID):
 
 
         # Pass the assigneeID and listTickets list to html render
-        return render_template('home.html', assigneeID=assigneeID, tasks=merged_dict, events=calendar_events, latest_end_time=formatted_latest_end_time, currentime=formatted_est_time)
+        return render_template('home.html', assigneeID=assigneeID, tasks=merged_dict, events=calendar_events,\
+                                latest_end_time=formatted_latest_end_time, currentime=formatted_est_time)
     else:
         # Return error page.
         return render_template("error.html")
@@ -474,10 +499,12 @@ def fetch_tasks(clientID):
         cTasks = fParent / fSubfolder # This should be a folder
 
         # Sort the tasks by passed clinetID 
-        cSortedTickets = cTasks.filter(client_property__exact=clientID).order_by('client_property', '-dateCreated_property').only("subject", "categories", "dateCreated_property", "hrsActualTotal_property", "datelastactivity_property")
+        cSortedTickets = cTasks.filter(client_property__exact=clientID).order_by('client_property', '-dateCreated_property')\
+            .only("subject", "categories", "dateCreated_property", "hrsActualTotal_property", "datelastactivity_property")
         
         # Sort the tasks by clinetID none for place holder tickets
-        cSortedTicketsNone = cTasks.filter(assignee_property__exact="").order_by('client_property', '-dateCreated_property').only("subject", "categories", "dateCreated_property", "hrsActualTotal_property", "datelastactivity_property")
+        cSortedTicketsNone = cTasks.filter(assignee_property__exact="").order_by('client_property', '-dateCreated_property')\
+            .only("subject", "categories", "dateCreated_property", "hrsActualTotal_property", "datelastactivity_property")
 
         # Define list to store tickets with assignee=""
         listTicketsNone = []
@@ -578,10 +605,12 @@ def fetch_tasks_assignee(assigneeID):
 
 
         # Sort the tasks by passed assigneeID 
-        cSortedTickets = cTasks.filter(assignee_property__exact=assigneeID).order_by('client_property', '-dateCreated_property').only("subject", "categories", "dateCreated_property", "hrsActualTotal_property", "datelastactivity_property")
+        cSortedTickets = cTasks.filter(assignee_property__exact=assigneeID).order_by('client_property', '-dateCreated_property')\
+            .only("subject", "categories", "dateCreated_property", "hrsActualTotal_property", "datelastactivity_property")
 
         # Sort the tasks by assigneeID as none
-        cSortedTicketsNone = cTasks.filter(assignee_property__exact="").order_by('client_property', '-dateCreated_property').only("subject", "categories", "dateCreated_property", "hrsActualTotal_property", "datelastactivity_property")
+        cSortedTicketsNone = cTasks.filter(assignee_property__exact="").order_by('client_property', '-dateCreated_property')\
+            .only("subject", "categories", "dateCreated_property", "hrsActualTotal_property", "datelastactivity_property")
 
 
         # Define list to store tickets with assignee=""

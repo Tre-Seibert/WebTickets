@@ -6,3 +6,4 @@ flask_session
 redis
 python-dotenv
 urllib3==1.26.7
+html2text
