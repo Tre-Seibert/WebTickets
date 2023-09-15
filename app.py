@@ -22,7 +22,7 @@ from exchangelib import DELEGATE, Account, Configuration, ExtendedProperty, Faul
 from exchangelib.items import SEND_TO_ALL_AND_SAVE_COPY # For sending time entrys 
 from pytz import timezone # For converting timezones
 from datetime import datetime, timedelta # For converting times
-import html2text
+import html2text # Handles html responses in calendar items
 
 
 ###############
@@ -203,8 +203,9 @@ def callback():
 def favicon():
     return send_from_directory(os.path.join(app.root_path, 'static'), 'favicon.ico',mimetype='image/vnd.microsoft.icon')
 
-
-# Define a function to remove HTML tags
+####################
+# Remove HTML tags
+####################
 def remove_html_tags(html_text):
     return html2text.html2text(html_text)
 
@@ -312,8 +313,11 @@ def home(assigneeID):
             last_activity_utc = ticketsNone_data['Last Activity']
             last_activity_est = last_activity_utc.astimezone(eastern_tz)
             ticketsNone_data['Last Activity'] = last_activity_est.strftime('%Y-%m-%d %I:%M %p')
-
+        
+        # Merge the dictionaries
         merged_dict = listTickets + listTicketsNone
+
+        # Make assigneeID uppercase to display on webpage
         assigneeID = assigneeID.upper()
         
         # Create list to store time entries
@@ -345,6 +349,7 @@ def home(assigneeID):
         # Reverse list to keep latest on top
         calendar_items.reverse()
 
+        # Print cal items
         if TESTING_MODE == True:
             print("calendar items: ", calendar_items)
 
@@ -358,7 +363,6 @@ def home(assigneeID):
 
         # Format the latest_end_time for display in the template
         formatted_latest_end_time = latest_end_time.strftime('%m/%d/%Y %I:%M %p')
-
 
         # Create an empty list to store the calendar events
         calendar_events = []
@@ -374,11 +378,8 @@ def home(assigneeID):
                 }
                 print(event_data)
                 calendar_events.append(event_data)
-                
-
         
-        # Get current datetime to pass to html
-        # Get the current UTC time
+        # Get current UTC datetime to pass to html
         utc_now = datetime.utcnow()
 
         # Calculate the time difference for EST (UTC-5 hours)
@@ -389,7 +390,6 @@ def home(assigneeID):
 
         # Format the EST time for the "datetime-local" input type
         formatted_est_time = est_time.strftime('%Y-%m-%dT%H:%M')
-
 
         # Pass the assigneeID and listTickets list to html render
         return render_template('home.html', assigneeID=assigneeID, tasks=merged_dict, events=calendar_events,\
@@ -406,7 +406,7 @@ def create_meeting_request():
     if request.method == 'POST':
         # Checks for token in redis cache
         if "access_token" in session:
-
+            
             # Retrieve user input from html
             subject = request.form.get('subject')
             start_time = request.form.get('start_time')
