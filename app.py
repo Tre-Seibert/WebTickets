@@ -18,7 +18,8 @@ from msal import ConfidentialClientApplication # For interactive authentication
 from flask import Flask, render_template, request, session, redirect, send_from_directory, url_for # For creating web app
 from redis import Redis # For access token caching
 from flask_session import Session # For session handling
-from exchangelib import DELEGATE, Account, Configuration, ExtendedProperty, FaultTolerance, Task, CalendarItem, OAuth2AuthorizationCodeCredentials, OAUTH2, OAuth2LegacyCredentials # For exporting tickets
+from exchangelib import DELEGATE, Account, Configuration, ExtendedProperty, FaultTolerance,\
+Task, CalendarItem, OAuth2AuthorizationCodeCredentials, OAUTH2, OAuth2LegacyCredentials # For exporting tickets
 from exchangelib.items import SEND_TO_ALL_AND_SAVE_COPY # For sending time entrys 
 from pytz import timezone # For converting timezones
 from datetime import datetime, timedelta # For converting times
@@ -80,12 +81,6 @@ app.config['SESSION_REDIS'] = r
 
 # Initialize Session
 Session(app)
-
-# Set the template folder for Flask to the absolute path of the current directory.
-# Root is the directory of the account 'TBAdmin' user account, "my_flask_app"
-template_folder = os.path.abspath(os.path.dirname(__file__))
-app.template_folder = template_folder
-
 
 #######################
 # Extended Properties 
