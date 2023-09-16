@@ -1,12 +1,9 @@
-# v1.7.2
-# -- Creates timeentrysent webpage to redirect users after submitting.
-# -- Cleaned code.
-# -- Reduced time entry number to 5 tickets.
-# -- Adds fault tolerance in index route.
+# Creates class and registers new extended property, reason_property, for .Reason property
+# Client Portal: Pulls only "Billable" and "Support" tickets based on .Reason property 
 
-###############
+###########
 # IMPORTS
-###############
+###########
 
 # INTERNAL:
 import os # Gets the env variables from .env file
@@ -15,16 +12,15 @@ import secrets # For flask managing session tokens
 # EXTERNAL:
 from dotenv import load_dotenv # For loading environment variables
 from msal import ConfidentialClientApplication # For interactive authentication
-from flask import Flask, render_template, request, session, redirect, send_from_directory, url_for # For creating web app
+from flask import Flask, render_template, request, session, redirect, send_from_directory # For creating web app
 from redis import Redis # For access token caching
 from flask_session import Session # For session handling
 from exchangelib import DELEGATE, Account, Configuration, ExtendedProperty, FaultTolerance,\
-Task, CalendarItem, OAuth2AuthorizationCodeCredentials, OAUTH2, OAuth2LegacyCredentials # For exporting tickets
+Task, CalendarItem, OAuth2AuthorizationCodeCredentials, OAUTH2, OAuth2LegacyCredentials, Q # For exporting tickets
 from exchangelib.items import SEND_TO_ALL_AND_SAVE_COPY # For sending time entrys 
 from pytz import timezone # For converting timezones
 from datetime import datetime, timedelta # For converting times
 import html2text # Handles html responses in calendar items
-
 
 ###############
 # GLOBALS
@@ -35,6 +31,7 @@ TESTING_MODE = False
 # Load env variables
 load_dotenv()
 
+# Retrieve .env variables
 m_sClientID = os.getenv("CLIENT_ID")
 m_sClientSecret = os.getenv("CLIENT_SECRET")
 m_sRedirectURI = os.getenv("REDIRECT_URI")
@@ -48,7 +45,6 @@ m_sPort = os.getenv("REDIS_PORT")
 
 # Create instance of ClientApp
 webTicketsApp = ConfidentialClientApplication(client_id=m_sClientID, client_credential=m_sClientSecret, authority=m_sAuthority)
-
 
 ########################
 # Flask Configuration
@@ -112,13 +108,18 @@ class DateLastActivity(ExtendedProperty):
     property_name = '.DateLastActivity'
     property_type = 'SystemTime'
 
+class Reason(ExtendedProperty):
+    distinguished_property_set_id = 'PublicStrings'
+    property_name = '.Reason'
+    property_type = 'String'
+
 # Register extended properties
 Task.register('dateCreated_property', DateCreated)
 Task.register('client_property', Client)
 Task.register('assignee_property', Assignee)
 Task.register('hrsActualTotal_property', HrsActualTotal)
 Task.register('datelastactivity_property', DateLastActivity)
-
+Task.register('reason_property', Reason)
 
 ##################
 #  / Root Path
@@ -158,7 +159,6 @@ def index():
             print(auth_url) # debug
         return redirect(auth_url)
     
-
 #################################
 # Callback Route
 # Redirect after authentication
@@ -190,7 +190,6 @@ def callback():
     # Redirect to root(/) route
     return redirect("/")
 
-
 #########################
 # Favicon Route
 ########################
@@ -203,7 +202,6 @@ def favicon():
 ####################
 def remove_html_tags(html_text):
     return html2text.html2text(html_text)
-
 
 ###############################
 # Index Route
@@ -256,6 +254,7 @@ def home(assigneeID):
         # This list contains the complete ticket
         listTicketsNone = []
 
+        # Add tasks to listTicketsNone
         for task in reversed(list(cSortedTicketsNone)):
             # Filter for tickets in 'Place Holder' category
             if task.categories == ["Place Holder"]:
@@ -270,7 +269,6 @@ def home(assigneeID):
                 }
                 # Add to listTicketsNone dictionary
                 listTicketsNone.append(ticketsNone_data)
-
 
         # Define list to store tickets
         # This list contains the complete ticket
@@ -401,7 +399,6 @@ def create_meeting_request():
     if request.method == 'POST':
         # Checks for token in redis cache
         if "access_token" in session:
-            
             # Retrieve user input from html
             subject = request.form.get('subject')
             start_time = request.form.get('start_time')
@@ -465,7 +462,6 @@ def fetch_tasks(clientID):
     clientID = clientID.upper()
     # Checks for token in redis cache
     if "access_token" in session:
-
         # Define Exchangelib creds.
         creds = OAuth2AuthorizationCodeCredentials(access_token=session["access_token"])
         if TESTING_MODE == True:
@@ -503,7 +499,8 @@ def fetch_tasks(clientID):
 
         # Define list to store tickets with assignee=""
         listTicketsNone = []
-
+        
+        # Add tasks to listTicketsNone
         for task in reversed(list(cSortedTicketsNone)):
             if task.categories == ["Place Holder"]:
                 ticketsNone_data = {
@@ -551,7 +548,8 @@ def fetch_tasks(clientID):
             last_activity_utc = ticketsNone_data['Last Activity']
             last_activity_est = last_activity_utc.astimezone(eastern_tz)
             ticketsNone_data['Last Activity'] = last_activity_est.strftime('%Y-%m-%d %I:%M %p')
-
+        
+        # Merge dictionaries
         merged_dict = listTickets + listTicketsNone
 
         # Pass the clientID and listTickets list to html render
@@ -699,7 +697,6 @@ def fetch_tasks_assignee(assigneeID):
 ###############################
 @app.route('/fetch-tasks-client/<string:clientID>')
 def fetch_tasks_client(clientID):
-
     # Make sure clientID is uppercase (all of our client ID's on 365 are uppercase)
     clientID = clientID.upper()
     # Define Exchangelib creds. 
@@ -724,9 +721,13 @@ def fetch_tasks_client(clientID):
     fParent = fPublic / fTB
     cTasks = fParent / fSubfolder # This should be a folder
 
-    # Sort the tasks by passed clinetID 
-    cSortedTickets = cTasks.filter(client_property__exact=clientID).order_by('-dateCreated_property')
-    
+    # Sort the tasks by passed clientID
+    # Only requests tasks in "Support" or "Billable" reason
+    cSortedTickets = cTasks.filter(
+    Q(client_property__exact=clientID) &
+    (Q(reason_property__exact="Support") | Q(reason_property__exact="Billable"))).order_by('-dateCreated_property').only("subject", "categories", "dateCreated_property",\
+        "hrsActualTotal_property", "datelastactivity_property")
+
     # Define list to store tickets
     # This list contains the complete ticket with formatted dates.
     listTickets = []
