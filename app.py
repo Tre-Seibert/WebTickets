@@ -19,6 +19,7 @@ from exchangelib import DELEGATE, Account, Configuration, ExtendedProperty, Faul
 Task, CalendarItem, OAuth2AuthorizationCodeCredentials, OAUTH2, OAuth2LegacyCredentials, Q # For exporting tickets
 from exchangelib.items import SEND_TO_ALL_AND_SAVE_COPY # For sending time entrys 
 from pytz import timezone # For converting timezones
+import pytz
 from datetime import datetime, timedelta # For converting times
 import html2text # Handles html responses in calendar items
 
@@ -372,21 +373,21 @@ def home(assigneeID):
                 print(event_data)
                 calendar_events.append(event_data)
         
-        # Get current UTC datetime to pass to html
+        # Set the time zone to 'US/Eastern' which accounts for DST
+        eastern_timezone = pytz.timezone('US/Eastern')
+
+        # Get the current UTC time
         utc_now = datetime.utcnow()
 
-        # Calculate the time difference for EST (UTC-5 hours)
-        est_offset = timedelta(hours=-4)
+        # Convert the UTC time to the Eastern time zone (accounting for DST)
+        est_now = utc_now.replace(tzinfo=pytz.utc).astimezone(eastern_timezone)
 
-        # Convert UTC time to EST
-        est_time = utc_now + est_offset
-
-        # Format the EST time for the "datetime-local" input type
-        formatted_est_time = est_time.strftime('%Y-%m-%dT%H:%M')
+        # Format the EST/EDT time as a string
+        formatted_time = est_now.strftime('%Y-%m-%dT%H:%M')
 
         # Pass the assigneeID and listTickets list to html render
         return render_template('home.html', assigneeID=assigneeID, tasks=merged_dict, events=calendar_events,\
-                                latest_end_time=formatted_latest_end_time, currentime=formatted_est_time)
+                                latest_end_time=formatted_latest_end_time, currentime=formatted_time)
     else:
         # Return error page.
         return render_template("error.html")
