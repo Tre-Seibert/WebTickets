@@ -293,17 +293,23 @@ def home(assigneeID):
                     # Add to listTickets dictionary
                     listTickets.append(tickets_data)
         
-        # Convert the "Last Activity" timestamp to Eastern Standard Time (EST)
-        # Convert to 12-hour time
-        eastern_tz = timezone('America/New_York')
+        # Convert the "Last Activity", "Date Created" timestamp to Eastern Standard Time (EST)
+        # (Accounts for DST and Standard Time Transitions)
+        eastern_tz = pytz.timezone('US/Eastern')
         for tickets_data in listTickets:
-            tickets_data['Date Created'] = tickets_data['Date Created'].strftime('%Y-%m-%d %I:%M %p')
+            last_created_utc = tickets_data['Date Created']
+            last_created_est = last_created_utc.astimezone(eastern_tz)
+            tickets_data['Date Created'] = last_created_est.strftime('%Y-%m-%d %I:%M %p')
+
             last_activity_utc = tickets_data['Last Activity']
             last_activity_est = last_activity_utc.astimezone(eastern_tz)
             tickets_data['Last Activity'] = last_activity_est.strftime('%Y-%m-%d %I:%M %p')
 
         for ticketsNone_data in listTicketsNone:
-            ticketsNone_data['Date Created'] = ticketsNone_data['Date Created'].strftime('%Y-%m-%d %I:%M %p')
+            last_created_utc = ticketsNone_data['Date Created']
+            last_created_est = last_created_utc.astimezone(eastern_tz)
+            ticketsNone_data['Date Created'] = last_created_est.strftime('%Y-%m-%d %I:%M %p')
+            
             last_activity_utc = ticketsNone_data['Last Activity']
             last_activity_est = last_activity_utc.astimezone(eastern_tz)
             ticketsNone_data['Last Activity'] = last_activity_est.strftime('%Y-%m-%d %I:%M %p')
@@ -537,15 +543,21 @@ def fetch_tasks(clientID):
         
         # Convert the "Last Activity" timestamp to Eastern Standard Time (EST)
         # Convert to 12-hour time
-        eastern_tz = timezone('America/New_York')
+        eastern_tz = pytz.timezone('US/Eastern')
         for tickets_data in listTickets:
-            tickets_data['Date Created'] = tickets_data['Date Created'].strftime('%Y-%m-%d %I:%M %p')
+            last_created_utc = tickets_data['Date Created']
+            last_created_est = last_created_utc.astimezone(eastern_tz)
+            tickets_data['Date Created'] = last_created_est.strftime('%Y-%m-%d %I:%M %p')
+
             last_activity_utc = tickets_data['Last Activity']
             last_activity_est = last_activity_utc.astimezone(eastern_tz)
             tickets_data['Last Activity'] = last_activity_est.strftime('%Y-%m-%d %I:%M %p')
-        
+
         for ticketsNone_data in listTicketsNone:
-            ticketsNone_data['Date Created'] = ticketsNone_data['Date Created'].strftime('%Y-%m-%d %I:%M %p')
+            last_created_utc = ticketsNone_data['Date Created']
+            last_created_est = last_created_utc.astimezone(eastern_tz)
+            ticketsNone_data['Date Created'] = last_created_est.strftime('%Y-%m-%d %I:%M %p')
+            
             last_activity_utc = ticketsNone_data['Last Activity']
             last_activity_est = last_activity_utc.astimezone(eastern_tz)
             ticketsNone_data['Last Activity'] = last_activity_est.strftime('%Y-%m-%d %I:%M %p')
@@ -651,15 +663,21 @@ def fetch_tasks_assignee(assigneeID):
         
         # Convert the "Last Activity" timestamp to Eastern Standard Time (EST)
         # Convert to 12-hour time
-        eastern_tz = timezone('America/New_York')
+        eastern_tz = pytz.timezone('US/Eastern')
         for tickets_data in listTickets:
-            tickets_data['Date Created'] = tickets_data['Date Created'].strftime('%Y-%m-%d %I:%M %p')
+            last_created_utc = tickets_data['Date Created']
+            last_created_est = last_created_utc.astimezone(eastern_tz)
+            tickets_data['Date Created'] = last_created_est.strftime('%Y-%m-%d %I:%M %p')
+
             last_activity_utc = tickets_data['Last Activity']
             last_activity_est = last_activity_utc.astimezone(eastern_tz)
             tickets_data['Last Activity'] = last_activity_est.strftime('%Y-%m-%d %I:%M %p')
 
         for ticketsNone_data in listTicketsNone:
-            ticketsNone_data['Date Created'] = ticketsNone_data['Date Created'].strftime('%Y-%m-%d %I:%M %p')
+            last_created_utc = ticketsNone_data['Date Created']
+            last_created_est = last_created_utc.astimezone(eastern_tz)
+            ticketsNone_data['Date Created'] = last_created_est.strftime('%Y-%m-%d %I:%M %p')
+            
             last_activity_utc = ticketsNone_data['Last Activity']
             last_activity_est = last_activity_utc.astimezone(eastern_tz)
             ticketsNone_data['Last Activity'] = last_activity_est.strftime('%Y-%m-%d %I:%M %p')
@@ -755,12 +773,17 @@ def fetch_tasks_client(clientID):
     
     # Convert the "Last Activity" timestamp to Eastern Standard Time (EST)
     # Convert to 12-hour time
-    eastern_tz = timezone('America/New_York')
+    eastern_tz = pytz.timezone('US/Eastern')
     for tickets_data in listTickets:
-        tickets_data['Date Created'] = tickets_data['Date Created'].strftime('%Y-%m-%d %I:%M %p')
+        last_created_utc = tickets_data['Date Created']
+        last_created_est = last_created_utc.astimezone(eastern_tz)
+        tickets_data['Date Created'] = last_created_est.strftime('%Y-%m-%d %I:%M %p')
+
         last_activity_utc = tickets_data['Last Activity']
         last_activity_est = last_activity_utc.astimezone(eastern_tz)
         tickets_data['Last Activity'] = last_activity_est.strftime('%Y-%m-%d %I:%M %p')
+
+
 
     # Pass the clientID and listTickets list to html render
     return render_template('task_list_client.html', clientID=clientID, tasks=listTickets)
